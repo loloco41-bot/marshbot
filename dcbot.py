@@ -17,11 +17,14 @@ async def on_ready():
 @bot.command()
 async def registrar(ctx):
 
-    # evita duplicação por usuário
-    if ctx.author.id in registrando_users:
+    user_id = ctx.author.id
+
+    # 🔥 bloqueia múltiplos registros do mesmo usuário
+    if user_id in registrando_users:
+        await ctx.send("⏳ Você já está em um registro em andamento.")
         return
 
-    registrando_users.add(ctx.author.id)
+    registrando_users.add(user_id)
 
     def check(m):
         return (
@@ -53,7 +56,7 @@ async def registrar(ctx):
 
             if tentativas >= 3:
                 await ctx.send("Muitas tentativas. Cancelado ❌")
-                registrando_users.remove(ctx.author.id)
+                registrando_users.discard(user_id)
                 return
 
         # 🔹 Telefone
@@ -75,7 +78,7 @@ async def registrar(ctx):
 
     except:
         await ctx.send("Tempo esgotado ❌ tenta novamente.")
-        registrando_users.remove(ctx.author.id)
+        registrando_users.discard(user_id)
         return
 
     # 🔹 Finalização
@@ -92,11 +95,11 @@ async def registrar(ctx):
 
     await ctx.send(
         f"✅ Registro concluído!\n"
-        f"Registrado como {nome_formatado} ✅\n"
+        f"Registrado como {nome_formatado}\n"
         f"Telefone: {telefone}\n"
         f"Recrutado por: {recrutador}"
     )
 
-    registrando_users.remove(ctx.author.id)
+    registrando_users.discard(user_id)
 
 bot.run(os.getenv("TOKEN"))
